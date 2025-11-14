@@ -231,3 +231,105 @@ header.scene h1{
   color:var(--accent);
   font-weight:700;
 }
+
+/* =======================
+      📱 MOBILE RESPONSIVE
+   ======================= */
+@media (max-width: 768px) {
+
+    body {
+        overflow-y: auto;   /* Pour permettre le scroll sur mobile */
+        padding-bottom: 20vh;
+    }
+
+    header.scene h1 {
+        font-size: 9vw;
+    }
+
+    .subtitle {
+        font-size: 4.2vw;
+    }
+
+    .shuffle {
+        font-size: 4vw;
+        padding: 10px 18px;
+        border-radius: 10px;
+    }
+
+    /* ——— CADEAUX FLOTTANTS ——— */
+    .gift {
+        width: 14vw;
+        height: 14vw;
+        min-width: 60px;
+        min-height: 60px;
+    }
+
+    .gift .emoji {
+        font-size: 9vw;
+    }
+
+
+
+    /* ——— MODAL ——— */
+    #modal-content {
+        width: 90vw;
+        padding: 4vw;
+    }
+
+    #close {
+        font-size: 6vw;
+        top: 3vw;
+        right: 3vw;
+    }
+
+
+    /* ——— CADEAU OUVRABLE ——— */
+    .present {
+        margin-top: 5vw;
+    }
+
+    .box {
+        width: 70vw;
+        height: 70vw;
+        border-width: 2vw;
+        border-radius: 3vw;
+    }
+
+    .lid {
+        width: 30vw;
+        height: 20vw;
+        top: -18vw;
+        border-radius: 3vw;
+    }
+
+    .ribbon.horizontal {
+        height: 4vw;
+    }
+
+    .ribbon.vertical {
+        width: 4vw;
+    }
+
+    /* Image */
+    .box img {
+        padding: 8vw;
+        border-radius: 2.5vw;
+    }
+
+    /* Titre */
+    .title-overlay {
+        font-size: 4.5vw;
+        padding: 2vw;
+        bottom: 3vw;
+    }
+
+    /* Meta infos */
+    .meta {
+        margin-top: 5vw;
+        font-size: 4vw;
+    }
+
+    .price {
+        font-size: 5vw;
+    }
+}
