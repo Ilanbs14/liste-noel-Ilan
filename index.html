@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Liste de Noël</title>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="icon" href="https://imgs.search.brave.com/KvdpdArfDidO5HyIX15AqsLqV8PRM9-Ntb4wtWBBAtI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cGhvdG9zLXByZW1p/dW0vYm91bGVzLW5v/ZWwtcm91Z2VzLWlz/b2xlZXMtZm9uZC1i/bGFuY18zOTI4OTUt/NTA3MDguanBnP3Nl/bXQ9YWlzX2h5YnJp/ZCZ3PTc0MCZxPTgw">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;600;800&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<header class="scene">
+    <h1>Ma Liste de Noël</h1>
+    <p class="subtitle">✨Clique sur un cadeau pour le révéler✨</p>
+    <button id="shuffle-btn" class="shuffle">Mélanger les cadeaux</button>
+
+</header>
+
+<!-- Canvas neige -->
+<canvas id="snow-canvas"></canvas>
+
+<div id="gift-container"></div>
+
+<!-- Modale -->
+<div id="modal" class="hidden">
+    <div id="modal-backdrop"></div>
+    <div id="modal-content">
+
+        <button id="close">✕</button>
+
+        <div class="present" id="presentBox">
+            <div class="lid"></div>
+            <div class="box">
+                <div class="ribbon horizontal"></div>
+                <div class="ribbon vertical"></div>
+
+                <img id="gift-image" src="" alt="">
+                <div class="title-overlay" id="gift-title"></div>
+            </div>
+        </div>
+
+        <div class="meta">
+            <p id="gift-comment"></p>
+            <p class="price" id="gift-price"></p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// --------- LISTE DES CADEAUX ---------
+const gifts = [
+    {
+        title: "Tapis de souris",
+        image: "https://m.media-amazon.com/images/I/51rk9gBTngL._AC_SX679_.jpg",
+        comment: "Un tapis de souris 60x30 noir et blanc ou entièrement noir (Pas forcément ce modèle) ",
+        price: "A partir de 10 €",
+        link: "https://www.amazon.fr/souris-YEBMoo-%C3%A9tendu-Clavier-dordinateur/dp/B07SWYQ8H6/ref=sr_1_10_mod_primary_new?__mk_fr_FR=%C3%85M%C3%85%C5%BD%C3%95%C3%91&s=computers&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=1-10"
+    },
+    {
+        title: "Highschool Mercenary - Tome 9",
+        image: "https://m.media-amazon.com/images/I/61AAu-J9k7L._SY425_.jpg",
+        comment: "Meilleur webtoon d'action (je vous le conseille)",
+        price: "12.95 €",
+        link: "https://www.amazon.fr/Highschool-Mercenary-9-YC/dp/2749962161/ref=sr_1_1?sr=8-1"
+    },
+    {
+        title: "Focusmelo de YUSTON XIII",
+        image: "https://focusmelo.fr/cdn/shop/files/14B0323B-71D7-4B3A-825A-D34F244B755C.jpg?v=1754411194&width=360",
+        comment: "Son dernier album si déjà sorti sinon 'l'enfant des cendres' ou 'A demain à jamais'",
+        price: "De 24.90 à 34.90 selon la taille",
+        link: "https://focusmelo.fr/products/cadre-album-manquant"
+    },
+    {
+        title : "Installation d'une prise ethernet dans ma chambre",
+        image : "images/electricien.png",
+        comment : "Je compte sur toi papa (courage)",
+        price : "Aucune idée désolé",
+        link : "images/electricien.png"
+    },
+    {
+        title : "Tablette de chocolat dubai",
+        image : "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Dubai_chocolate_on_a_plate_02.jpg/2560px-Dubai_chocolate_on_a_plate_02.jpg",
+        comment : "Chocolat dubai du food truck de Linas",
+        price : "25€",
+        link : "https://www.linas.fr/contacts/foodtruck-la-part-belle/"
+    }
+];
+
+// --------- PLACEMENT DES CADEAUX ---------
+const container = document.getElementById("gift-container");
+const placedPositions = [];
+const minDist = 8; // distance minimale en vw entre 2 cadeaux
+
+function tooClose(x, y) {
+    return placedPositions.some(pos => {
+        const dx = pos.x - x;
+        const dy = pos.y - y;
+        return Math.sqrt(dx*dx + dy*dy) < minDist;
+    });
+}
+
+function getSafePosition() {
+    let x, y;
+    let tries = 0;
+
+    do {
+        x = Math.random() * 90;     // 0 à 90 vw
+        y = Math.random() * 60 + 25; // 25 à 85 vh
+        tries++;
+        if (tries > 200) break; // sécurité
+    } while (tooClose(x, y));
+
+    placedPositions.push({ x, y });
+    return { x, y };
+}
+
+gifts.forEach((g, i) => {
+    const { x, y } = getSafePosition();
+
+    const el = document.createElement("div");
+    el.classList.add("gift");
+    el.style.left = x + "vw";
+    el.style.top = y + "vh";
+    el.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 55%)`;
+
+    el.innerHTML = "<div class='emoji'>🎁</div>";
+
+    el.addEventListener("click", () => openGift(i));
+    container.appendChild(el);
+});
+
+// --------- OUVERTURE DU CADEAU ---------
+const modal = document.getElementById("modal");
+const closeBtn = document.getElementById("close");
+const giftImg = document.getElementById("gift-image");
+const giftTitle = document.getElementById("gift-title");
+const giftComment = document.getElementById("gift-comment");
+const giftPrice = document.getElementById("gift-price");
+const presentBox = document.getElementById("presentBox");
+
+function openGift(i){
+    const g = gifts[i];
+
+    modal.classList.remove("hidden");
+
+    presentBox.classList.remove("open");
+    showRibbons(true);
+
+    giftImg.src = g.image;
+    giftTitle.textContent = g.title;
+    giftComment.textContent = g.comment;
+    giftPrice.textContent = g.price;
+
+    // Ouverture animée
+    setTimeout(() => {
+        presentBox.classList.add("open");
+        showRibbons(false);
+    }, 800);
+
+    // Lien clic
+    giftImg.onclick = () => window.open(g.link, "_blank");
+    giftTitle.onclick = () => window.open(g.link, "_blank");
+}
+
+function closeGift(){
+    modal.classList.add("hidden");
+}
+closeBtn.onclick = closeGift;
+modal.onclick = e => { if(e.target === modal) closeGift(); };
+document.onkeydown = e => { if(e.key === "Escape") closeGift(); };
+
+// Rubans visibles ou non
+function showRibbons(show){
+    document.querySelector(".ribbon.horizontal").style.opacity = show ? 1 : 0;
+    document.querySelector(".ribbon.vertical").style.opacity = show ? 1 : 0;
+    document.querySelector(".ribbon.horizontal").style.display = show ? "" : "none";
+    document.querySelector(".ribbon.vertical").style.display = show ? "" : "none";
+    
+}
+
+
+// --------- NEIGE ---------
+const canvas = document.getElementById("snow-canvas");
+const ctx = canvas.getContext("2d");
+let w, h;
+function resize(){ w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+window.onresize = resize; resize();
+
+let flakes = Array.from({length:120}, () => ({
+    x: Math.random()*w,
+    y: Math.random()*h,
+    r: Math.random()*3+1,
+    s: Math.random()*2+0.5
+}));
+
+function snow(){
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = "white";
+    flakes.forEach(f => {
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+        ctx.fill();
+
+        f.y += f.s;
+        f.x += Math.sin(f.y * 0.01);
+
+        if(f.y > h) f.y = -10;
+    });
+    requestAnimationFrame(snow);
+}
+snow();
+
+// --------- FONCTION MÉLANGER ---------
+document.getElementById("shuffle-btn").onclick = shuffleGifts;
+
+function shuffleGifts() {
+    placedPositions.length = 0; // reset positions
+
+    const allGifts = document.querySelectorAll(".gift");
+
+    allGifts.forEach((el, i) => {
+        const { x, y } = getSafePosition();
+
+        el.style.left = x + "vw";
+        el.style.top = y + "vh";
+    });
+}
+
+</script>
+
+</body>
+</html>
